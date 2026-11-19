@@ -42,27 +42,61 @@ def sudoku_page():
     )
     st.markdown("""
     <style>
-    .sd-fixed{height:36px;display:flex;align-items:center;justify-content:center;
-      background:#dfe8f5;color:#17365c;border-radius:6px;font-weight:800;font-size:18px}
-    div[data-testid="stSelectbox"]{min-width:0}
-    .stApp label p, .stApp [data-testid="stWidgetLabel"] p {color:#172c4b !important;font-size:16px !important;font-weight:750 !important}
-    .stApp [data-testid="stMetricLabel"] p{color:#223b5e !important}
-    .stApp [data-testid="stMetricValue"]{color:#17365c !important}
-    .stApp div[data-baseweb="input"] input{color:#fff !important;background:#262626 !important;font-size:16px !important}
-    .stApp div[data-baseweb="input"]{background:#262626 !important}
-    .stApp div[data-baseweb="select"]>div{background:#262626 !important;color:#fff !important}
-    .stApp div[data-baseweb="select"] span{color:#fff !important;font-size:16px !important}
-    .stApp div[data-testid="stNumberInput"] button{color:#fff !important;background:#262626 !important}
-    .stApp .stButton>button:not([kind="primary"]){background:#222 !important;color:#fff !important}
-    .stApp .stButton>button:not([kind="primary"]) p{color:#fff !important;font-size:15px !important}
-    .stApp [data-testid="stFormSubmitButton"] button{color:#fff !important}
-    .stApp [data-testid="stFormSubmitButton"] button p{color:#fff !important}
-    .sd-fixed{font-size:20px !important}
-    .sd-box{font-weight:800;color:#233e66;font-size:16px}
-    /* 9열을 3열씩 묶은 바깥쪽 그룹의 세로 경계 */
-    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="column"] > [data-testid="stVerticalBlock"] [data-testid="stVerticalBlockBorderWrapper"]) > [data-testid="column"] {border-right:3px solid #30496d;padding-right:5px}
-
-    div[data-testid="stForm"] div[data-testid="stVerticalBlockBorderWrapper"]{border-radius:0}
+    /* Sudoku-specific typography and high-contrast inputs */
+    .stApp [data-testid="stWidgetLabel"] p,
+    .stApp label p,
+    .stApp [data-testid="stMetricLabel"] p {
+        color: #172c4b !important; font-size: 17px !important;
+        font-weight: 750 !important;
+    }
+    .stApp [data-testid="stMetricValue"] {
+        color: #172c4b !important; font-size: 29px !important;
+    }
+    .stApp [data-baseweb="input"],
+    .stApp [data-baseweb="input"] input,
+    .stApp [data-baseweb="select"] > div,
+    .stApp [data-baseweb="select"] input {
+        background: #252831 !important; color: #ffffff !important;
+        font-size: 17px !important;
+    }
+    .stApp [data-baseweb="input"] input::placeholder {color:#d4dbe7 !important}
+    .stApp [data-baseweb="select"] span,
+    .stApp [data-baseweb="select"] svg,
+    .stApp [data-testid="stNumberInput"] button,
+    .stApp [data-testid="stNumberInput"] button svg {
+        color: #ffffff !important; fill: #ffffff !important;
+        font-size: 17px !important;
+    }
+    .stApp [data-testid="stNumberInput"] button {background:#252831 !important}
+    .stApp .stButton > button:not([kind="primary"]) {
+        background:#252831 !important; color:#ffffff !important;
+    }
+    .stApp .stButton > button p,
+    .stApp [data-testid="stFormSubmitButton"] button p {
+        color:#ffffff !important; font-size:17px !important; font-weight:750 !important;
+    }
+    .stApp [data-testid="stFormSubmitButton"] button {
+        background:#d34058 !important; color:#ffffff !important;
+    }
+    .sd-fixed {
+        height:39px;display:flex;align-items:center;justify-content:center;
+        background:#e0eafa;color:#163458;border-radius:5px;
+        font-weight:850;font-size:20px;
+    }
+    /* Vertical 3x3 boundaries: only nine-column Sudoku rows, not the controls. */
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"]:nth-child(9):last-child)
+      > [data-testid="stColumn"]:nth-child(3),
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"]:nth-child(9):last-child)
+      > [data-testid="stColumn"]:nth-child(6),
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(9):last-child)
+      > [data-testid="column"]:nth-child(3),
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(9):last-child)
+      > [data-testid="column"]:nth-child(6) {
+        border-right: 4px solid #28486e !important;
+        padding-right: 7px !important;
+    }
+    /* Dropdown selected text and popover options */
+    [role="listbox"] [role="option"] {color:#ffffff !important;font-size:17px !important}
     </style>""", unsafe_allow_html=True)
     if "sd_rankings" not in st.session_state:
         st.session_state.sd_rankings = []
@@ -109,31 +143,25 @@ def sudoku_page():
         with st.form(f"sd_board_{version}"):
             answers = []
             for r in range(9):
-                groups = st.columns(3, gap="small")
+                cols = st.columns(9, gap="small")
                 row = []
-                for g in range(3):
-                    with groups[g]:
-                        # 3x3 구역을 각각 굵은 테두리로 둘러싸 가로·세로 경계를 표시합니다.
-                        with st.container(border=True):
-                            cols = st.columns(3, gap="small")
-                            for j in range(3):
-                                c = g*3+j
-                                n = puzzle[r][c]
-                                with cols[j]:
-                                    if n:
-                                        st.markdown(f'<div class="sd-fixed">{n}</div>', unsafe_allow_html=True)
-                                        row.append(n)
-                                    else:
-                                        choice = st.selectbox(
-                                            f"{r+1}행 {c+1}열", list(range(10)),
-                                            format_func=lambda x: "·" if x == 0 else str(x),
-                                            label_visibility="collapsed",
-                                            key=f"sd_{version}_{r}_{c}",
-                                        )
-                                        row.append(choice)
+                for c in range(9):
+                    n = puzzle[r][c]
+                    with cols[c]:
+                        if n:
+                            st.markdown(f'<div class="sd-fixed">{n}</div>', unsafe_allow_html=True)
+                            row.append(n)
+                        else:
+                            choice = st.selectbox(
+                                f"{r+1}행 {c+1}열", list(range(10)),
+                                format_func=lambda x: "·" if x == 0 else str(x),
+                                label_visibility="collapsed",
+                                key=f"sd_{version}_{r}_{c}",
+                            )
+                            row.append(choice)
                 answers.append(row)
                 if r in (2, 5):
-                    st.markdown('<div style="height:5px;background:#30496d;border-radius:4px;margin:1px 0 7px"></div>', unsafe_allow_html=True)
+                    st.markdown('<div style="height:5px;background:#28486e;border-radius:4px;margin:3px 0 8px"></div>', unsafe_allow_html=True)
             finished = st.form_submit_button("✅ Finish · 정답 확인", use_container_width=True, type="primary")
 
         if finished:
