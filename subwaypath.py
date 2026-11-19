@@ -30,6 +30,17 @@ section[data-testid="stSidebar"] .stButton>button{border:0;background:linear-gra
 section[data-testid="stSidebar"] .stButton>button:hover{filter:brightness(1.08)}
 section[data-testid="stSidebar"] .stRadio label{color:white}
 section[data-testid="stSidebar"] a{color:#fff}
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+section[data-testid="stSidebar"] [data-testid="stRadio"] label *,
+section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] *,
+section[data-testid="stSidebar"] .stButton button * {
+ color:#FFFFFF !important;opacity:1 !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+ color:#FFFFFF !important;font-size:17px !important;font-weight:700 !important;
+}
+
 h1,h2,h3{color:#13294c;letter-spacing:-.035em}
 .hero{border-radius:23px;background:linear-gradient(105deg,#192c61,#4964cc 58%,#2cc4af);padding:25px 32px;color:white;box-shadow:0 12px 32px #1a397026;margin-bottom:18px}
 .hero h1{color:white;margin:0;font-size:2.15rem}.hero p{color:#e3edff;margin:6px 0 0}
@@ -210,52 +221,51 @@ def sudoku_page():
     }
     .stApp [data-testid="stNumberInput"] button {background:#232A35 !important}
     [role="listbox"] [role="option"] {font-size:19px !important}
-    /* Each 3x3 box is a real Streamlit container with a thick frame.
-       This does not depend on fragile column:nth-child CSS selectors. */
+    /* 3x3 grid: no overflow, all nine cells same dimensions. */
     [class*="st-key-sd_block_"] {
-        border:5px solid #102A50 !important;
-        border-radius:0 !important;
-        background:#F8FAFD !important;
-        padding:6px !important;
-        margin:0 !important;
+        box-sizing:border-box !important;
+        min-width:0 !important;width:100% !important;
+        border:4px solid #142D50 !important;
+        border-radius:0 !important;padding:3px !important;
+        margin:0 !important;background:#F8FAFD !important;
+        overflow:hidden !important;
     }
-    [class*="st-key-sd_block_"] [data-testid="stVerticalBlock"] {
-        gap:4px !important;
+    [class*="st-key-sd_block_"] [data-testid="stVerticalBlock"],
+    [class*="st-key-sd_block_"] [data-testid="stHorizontalBlock"],
+    [class*="st-key-sd_block_"] [data-testid="stColumn"] {
+        gap:0 !important;min-width:0 !important;
+        box-sizing:border-box !important;
     }
-    [class*="st-key-sd_block_"] [data-testid="stHorizontalBlock"] {
-        gap:4px !important;
+    [class*="st-key-sd_block_"] [data-testid="stColumn"] {
+        flex:1 1 0 !important;padding:0 !important;
     }
-    [class*="st-key-sd_block_"] [data-testid="stSelectbox"] {
-        min-width:0 !important;
+    [class*="st-key-sd_block_"] [data-testid="stElementContainer"],
+    [class*="st-key-sd_block_"] [data-testid="stSelectbox"],
+    [class*="st-key-sd_block_"] [data-baseweb="select"] {
+        min-width:0 !important;width:100% !important;margin:0 !important;
     }
     [class*="st-key-sd_block_"] [data-baseweb="select"] > div {
-        min-height:65px !important;
-        height:65px !important;
+        box-sizing:border-box !important;width:100% !important;
+        min-height:56px !important;height:56px !important;
         border-radius:0 !important;
-        background:#FFFFFF !important;
-        color:#12294B !important;
-        border:1px solid #A6B2C4 !important;
-        padding:0 !important;
-        font-size:24px !important;
-        font-weight:800 !important;
+        background:#E0E8F5 !important;color:#12294B !important;
+        border:1px solid #AAB8C9 !important;
+        padding:0 2px !important;font-size:23px !important;font-weight:800 !important;
     }
     [class*="st-key-sd_block_"] [data-baseweb="select"] span,
     [class*="st-key-sd_block_"] [data-baseweb="select"] svg {
-        color:#12294B !important; fill:#12294B !important;
-        font-size:24px !important;
+        color:#12294B !important;fill:#12294B !important;
+        font-size:23px !important;font-weight:800 !important;
     }
-    [class*="st-key-sd_block_"] [data-baseweb="select"] svg {
-        width:13px !important;
+    [class*="st-key-sd_block_"] [data-baseweb="select"] svg {width:12px !important;}
+    .sd-fixed {
+        box-sizing:border-box;width:100%;height:56px;min-height:56px;
+        display:flex;align-items:center;justify-content:center;
+        background:#E0E8F5;color:#12294B;border:1px solid #AAB8C9;
+        border-radius:0;font-size:27px;font-weight:850;margin:0;
     }
     [class*="st-key-sd_block_"] [data-testid="stVerticalBlockBorderWrapper"] {
-        border:5px solid #102A50 !important;
-        border-radius:0 !important;
-    }
-    .sd-fixed {
-        min-height:65px;display:flex;align-items:center;justify-content:center;
-        background:#E0E8F5;color:#12294B;
-        border:1px solid #A6B2C4;
-        font-size:31px;font-weight:850;
+        border:none !important;padding:0 !important;
     }
     </style>""", unsafe_allow_html=True)
     if "sd_rankings" not in st.session_state:
@@ -305,13 +315,13 @@ def sudoku_page():
             # This makes BOTH vertical and horizontal bold borders structural.
             answers = [[0 for _ in range(9)] for _ in range(9)]
             for block_row in range(3):
-                block_cols = st.columns(3, gap="small")
+                block_cols = st.columns(3, gap=None)
                 for block_col in range(3):
                     with block_cols[block_col]:
-                        with st.container(border=True, key=f"sd_block_{block_row}_{block_col}"):
+                        with st.container(key=f"sd_block_{block_row}_{block_col}"):
                             for inner_row in range(3):
                                 r = block_row * 3 + inner_row
-                                cell_cols = st.columns(3, gap="small")
+                                cell_cols = st.columns(3, gap=None)
                                 for inner_col in range(3):
                                     c = block_col * 3 + inner_col
                                     n = puzzle[r][c]
@@ -364,13 +374,7 @@ def sudoku_page():
             st.caption("아직 완료 기록이 없습니다.")
         for idx, item in enumerate(rankings[:20], 1):
             st.write(f"{idx}위 · {item['name']} · {fmt(item['seconds'])}")
-        st.download_button(
-            "랭킹 JSON 저장",
-            data=json.dumps(rankings, ensure_ascii=False, indent=2),
-            file_name="sudoku_rankings.json",
-            mime="application/json",
-        )
-        st.caption("현재 랭킹은 브라우저 세션에 보관됩니다. Streamlit Cloud 전체 사용자 공용 영구 랭킹은 별도 데이터베이스가 필요합니다.")
+
 
 
 graph,locations=load_data()
