@@ -116,39 +116,8 @@ def timeline_html(path):
         parts.append(f'<div class="stop" style="--line:{color}"><div class="rail"><div class="dot"></div>'+('<div class="stem"></div>' if i<len(path)-1 else '')+'</div><div class="stoptext">'+html.escape(s)+f'<small>{i+1}번째 경유역</small></div></div>')
     return ''.join(parts)+'</div>'
 
-# Original Sudoku practice file has not been supplied. This standalone playable version is temporary.
-SOLVED=[[5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],[8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],[9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]]
-def new_puzzle():
-    rng=random.Random()
-    digit=list(range(1,10));rng.shuffle(digit)
-    solution=[[digit[x-1] for x in row] for row in SOLVED]
-    keep=set(rng.sample(range(81),38))
-    return solution,[[solution[i][j] if 9*i+j in keep else 0 for j in range(9)] for i in range(9)]
-
-def sudoku_page():
-    st.markdown('<div class="hero"><h1>🧩 Sudoku Break</h1><p>이동시간을 즐겁게 · 9 × 9 두뇌 게임</p></div>',unsafe_allow_html=True)
-    if 'puzzle' not in st.session_state:
-        st.session_state.solution,st.session_state.puzzle=new_puzzle()
-    if st.button('🔄 새 게임'):
-        st.session_state.solution,st.session_state.puzzle=new_puzzle()
-        st.session_state.game_version=st.session_state.get('game_version',0)+1
-        st.rerun()
-    version=st.session_state.get('game_version',0)
-    st.caption('빈칸에 1~9를 입력하고 정답 확인을 누르세요. 기존 수업 스도쿠 파일을 받으면 이 페이지에 연결할 수 있습니다.')
-    with st.form('sudoku'):
-        rows=[]
-        for i in range(9):
-            cols=st.columns(9,gap='small');vals=[]
-            for j in range(9):
-                n=st.session_state.puzzle[i][j]
-                with cols[j]:
-                    if n:st.markdown(f'<div style="text-align:center;padding:8px 0;font-weight:800;background:#e7effe;border-radius:7px;color:#1b3868">{n}</div>',unsafe_allow_html=True);vals.append(n)
-                    else:vals.append(st.selectbox(f'{i+1}행 {j+1}열',[0,1,2,3,4,5,6,7,8,9],format_func=lambda x:'·' if x==0 else str(x),label_visibility='collapsed',key=f'g{version}_{i}_{j}'))
-            rows.append(vals)
-        check=st.form_submit_button('정답 확인',type='primary',use_container_width=True)
-    if check:
-        if rows==st.session_state.solution:st.success('🎉 정답! 스도쿠를 완성했어요!')
-        else:st.warning('아직 정답이 아니에요. 빈칸과 숫자를 다시 확인해 보세요.')
+# 기존 PyQt5 실습의 스도쿠 생성·타이머·랭킹 기능을 웹으로 이식
+from sudoku_game import sudoku_page
 
 graph,locations=load_data()
 stations=sorted(graph)
