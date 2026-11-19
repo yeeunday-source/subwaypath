@@ -45,8 +45,25 @@ def sudoku_page():
     .sd-fixed{height:36px;display:flex;align-items:center;justify-content:center;
       background:#dfe8f5;color:#17365c;border-radius:6px;font-weight:800;font-size:18px}
     div[data-testid="stSelectbox"]{min-width:0}
+    .stApp label p, .stApp [data-testid="stWidgetLabel"] p {color:#172c4b !important;font-size:16px !important;font-weight:750 !important}
+    .stApp [data-testid="stMetricLabel"] p{color:#223b5e !important}
+    .stApp [data-testid="stMetricValue"]{color:#17365c !important}
+    .stApp div[data-baseweb="input"] input{color:#fff !important;background:#262626 !important;font-size:16px !important}
+    .stApp div[data-baseweb="input"]{background:#262626 !important}
+    .stApp div[data-baseweb="select"]>div{background:#262626 !important;color:#fff !important}
+    .stApp div[data-baseweb="select"] span{color:#fff !important;font-size:16px !important}
+    .stApp div[data-testid="stNumberInput"] button{color:#fff !important;background:#262626 !important}
+    .stApp .stButton>button:not([kind="primary"]){background:#222 !important;color:#fff !important}
+    .stApp .stButton>button:not([kind="primary"]) p{color:#fff !important;font-size:15px !important}
+    .stApp [data-testid="stFormSubmitButton"] button{color:#fff !important}
+    .stApp [data-testid="stFormSubmitButton"] button p{color:#fff !important}
+    .sd-fixed{font-size:20px !important}
+    .sd-box{font-weight:800;color:#233e66;font-size:16px}
+    /* 9열을 3열씩 묶은 바깥쪽 그룹의 세로 경계 */
+    [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="column"] > [data-testid="stVerticalBlock"] [data-testid="stVerticalBlockBorderWrapper"]) > [data-testid="column"] {border-right:3px solid #30496d;padding-right:5px}
+
+    div[data-testid="stForm"] div[data-testid="stVerticalBlockBorderWrapper"]{border-radius:0}
     </style>""", unsafe_allow_html=True)
-    st.caption("기존 실습의 Shuffle · Finish · Reset Timer · Ranking 기능을 웹 환경에 맞게 옮겼습니다.")
     if "sd_rankings" not in st.session_state:
         st.session_state.sd_rankings = []
     if "sd_running" not in st.session_state:
@@ -92,22 +109,28 @@ def sudoku_page():
         with st.form(f"sd_board_{version}"):
             answers = []
             for r in range(9):
-                cols = st.columns(9, gap="small")
+                groups = st.columns(3, gap="small")
                 row = []
-                for c in range(9):
-                    n = puzzle[r][c]
-                    with cols[c]:
-                        if n:
-                            st.markdown(f'<div class="sd-fixed">{n}</div>', unsafe_allow_html=True)
-                            row.append(n)
-                        else:
-                            choice = st.selectbox(
-                                f"{r+1}행 {c+1}열", list(range(10)),
-                                format_func=lambda x: "·" if x == 0 else str(x),
-                                label_visibility="collapsed",
-                                key=f"sd_{version}_{r}_{c}",
-                            )
-                            row.append(choice)
+                for g in range(3):
+                    with groups[g]:
+                        # 3x3 구역을 각각 굵은 테두리로 둘러싸 가로·세로 경계를 표시합니다.
+                        with st.container(border=True):
+                            cols = st.columns(3, gap="small")
+                            for j in range(3):
+                                c = g*3+j
+                                n = puzzle[r][c]
+                                with cols[j]:
+                                    if n:
+                                        st.markdown(f'<div class="sd-fixed">{n}</div>', unsafe_allow_html=True)
+                                        row.append(n)
+                                    else:
+                                        choice = st.selectbox(
+                                            f"{r+1}행 {c+1}열", list(range(10)),
+                                            format_func=lambda x: "·" if x == 0 else str(x),
+                                            label_visibility="collapsed",
+                                            key=f"sd_{version}_{r}_{c}",
+                                        )
+                                        row.append(choice)
                 answers.append(row)
                 if r in (2, 5):
                     st.markdown('<div style="height:5px;background:#30496d;border-radius:4px;margin:1px 0 7px"></div>', unsafe_allow_html=True)
